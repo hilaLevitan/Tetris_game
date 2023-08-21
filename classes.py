@@ -56,20 +56,20 @@ class Piece:
         height, width = self.image.shape[:2]
         new_width = int(np.abs(width * np.cos(np.radians(angle))) + np.abs(height * np.sin(np.radians(angle))))
         new_height = int(np.abs(width * np.sin(np.radians(angle))) + np.abs(height * np.cos(np.radians(angle))))
-
         # Calculate the center of the original image
         image_center = (width // 2, height // 2)
         # Calculate the rotation matrix
         rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
-
         # Adjust the translation in the matrix to center the image
         rot_mat[0, 2] += (new_width - width) / 2
         rot_mat[1, 2] += (new_height - height) / 2
 
         # Perform the rotation
         result = cv2.warpAffine(self.image, rot_mat, (new_width, new_height), flags=cv2.INTER_LINEAR)
-        rotated_top_left = np.dot(rot_mat, np.array([self.pieceLocation[1], self.pieceLocation[0], 1]))
-        self.pieceLocation = np.array([int(rotated_top_left[0]),int(rotated_top_left[1])])
+        if result.shape[1]<self.image.shape[1]:
+            self.pieceLocation[1]+=int(self.image.shape[1]/2-result.shape[1]/2)
+        else:
+            self.pieceLocation-=int(result.shape[1]/2-self.image.shape[1]/2)
         self.image=result
         self.mask = self.getMask()
     def move(self,key,canvasImage):
